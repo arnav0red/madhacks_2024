@@ -36,9 +36,11 @@ class Player:
         self.score = 0
         self.morale = 100
         self.deck: List[Card] = []
-        # self.deck.extend([copy.deepcopy(cardsMap[4]) for _ in range(3)])
-        # self.deck.extend([copy.deepcopy(cardsMap[5]) for _ in range(3)])
-        self.deck.extend([copy.deepcopy(cardsMap[8]) for _ in range(3)])
+        self.deck.extend([copy.deepcopy(cardsMap[4]) for _ in range(1)])
+        self.deck.extend([copy.deepcopy(cardsMap[5]) for _ in range(1)])
+        self.deck.extend([copy.deepcopy(cardsMap[8]) for _ in range(1)])
+        self.deck.extend([copy.deepcopy(cardsMap[3]) for _ in range(1)])
+        self.deck.extend([copy.deepcopy(cardsMap[7]) for _ in range(1)])
 
     def __str__(self):
         return self.name
@@ -249,7 +251,7 @@ with open("data.json", "r") as file:
 gameStartInformationPrompt = data["gameStartInformation"]
 charInfo = data["charInfo"]
 userInfo = data["userInfo"]
-useAI = False
+useAI = True
 convertedCharInfo = []
 for i in charInfo:
     convertedCharInfo.append({"role": "user", "parts": i})
