@@ -251,7 +251,7 @@ with open("data.json", "r") as file:
 gameStartInformationPrompt = data["gameStartInformation"]
 charInfo = data["charInfo"]
 userInfo = data["userInfo"]
-useAI = True
+useAI = False
 convertedCharInfo = []
 for i in charInfo:
     convertedCharInfo.append({"role": "user", "parts": i})
