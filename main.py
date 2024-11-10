@@ -1,6 +1,6 @@
 import google.generativeai as genai
-import json, re, random, requests, time
-from typing import List
+import json, re, random, requests, time, copy
+from typing import List, Dict
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 import flaskConnector
 
@@ -35,7 +35,10 @@ class Player:
         self.name = name
         self.score = 0
         self.morale = 100
-        self.deck: List[Card] = [cardsMap[4]] * 3 + [cardsMap[5]] * 3 + [cardsMap[8]]
+        self.deck: List[Card] = []
+        # self.deck.extend([copy.deepcopy(cardsMap[4]) for _ in range(3)])
+        # self.deck.extend([copy.deepcopy(cardsMap[5]) for _ in range(3)])
+        self.deck.extend([copy.deepcopy(cardsMap[8]) for _ in range(3)])
 
     def __str__(self):
         return self.name
@@ -58,6 +61,7 @@ class Round:
         self.moraleDamagePerTurn = 10
         self.drawPerTurn = 3
         self.debuffs = {}
+        self.buffs = {}
 
     def giveCards(self, numCards: int):
         if len(self.deck) < numCards:
@@ -68,19 +72,26 @@ class Round:
 
     def startRound(self):
         giveUserOutput(
-            f"Stats: \nMorale: {self.morale}, Attraction: {self.attraction}/{self.maxAttraction}\nDebuffs: {convertToList(self.debuffs)}"
+            f"Stats: \nMorale: {self.morale}, Attraction: {self.attraction}/{self.maxAttraction}\nBuffs: {convertToList(self.buffs)}, Debuffs: {convertToList(self.debuffs)}"
         )
         self.hand = self.giveCards(self.drawPerTurn)
         giveUserOutput("Your cards: " + str([i.name for i in self.hand]))
-        playedCard = convertInputToCard(
-            askUserInput("Which card would you like to play? "), self.hand
+        giveUserButtons(
+            [
+                [i.name, i.id, "(" + i.description + ") " + i.flavor_text]
+                for i in self.hand
+            ]
         )
-        self.playCard(playedCard)
+
+        # askUserInput("Which card would you like to play? ")
 
     def playCard(self, card: Card):
         giveUserOutput(f"Playing: {card.name}\n{card.description}\n")
         if "attract" in card.effect:
-            self.attraction += card.effect["attract"]
+            addition = 0
+            if "confidence" in self.buffs:
+                addition = self.buffs["confidence"]
+            self.attraction += card.effect["attract"] + addition
         if "friendzone" in card.effect:
             self.moraleDamagePerTurn += card.effect["friendzone"]
             if "friendzone" in self.debuffs:
@@ -89,6 +100,24 @@ class Round:
                 self.debuffs["friendzone"] = card.effect["friendzone"]
         if "decrAffect" in card.effect:
             card.effect["attract"] -= card.effect["decrAffect"]
+            card.description = re.sub(
+                r"(Attract \+ )\d+",
+                r"\g<1>" + str(card.effect["attract"]),
+                card.description,
+            )
+        if "gamba" in card.effect:
+            weights = [float(i) for i in card.effect["gamba"].keys()]
+
+            play = random.choices([1, 2], weights)
+            if play == 1:
+                addition = 0
+                if "confidence" in self.buffs:
+                    addition = self.buffs["confidence"]
+                self.attraction += card.effect["gamba"]["0.2"]["attract"] + addition
+                send_message_to_flask("Worked out")
+            else:
+                self.morale -= card.effect["gamba"]["0.8"]["moraleNeg"]
+                send_message_to_flask("Didn't work out")
 
     def endRound(self):
         self.morale -= self.moraleDamagePerTurn
@@ -101,13 +130,15 @@ class Round:
 
 class GameSession:
 
-    def __init__(self, winningScore: int):
+    def __init__(self, winningScore: int, player: str):
         self.scoringChat = model.start_chat(
             history=[{"role": "user", "parts": gameStartInformationPrompt}]
             + convertedCharInfo
         )
+        self.userChat = model.start_chat(history=[{"role": "user", "parts": userInfo}])
         self.winningScore = winningScore
-        self.playerList: List[Player] = []
+        self.playerList: List[Player] = [Player(player)]
+        self.round = Round(self.playerList[0], 100)
 
     def addPlayers(self, listPlayers: list):
         self.playerList.extend(listPlayers)
@@ -118,7 +149,6 @@ class GameSession:
 
     def scorePlayers(self, responseText: str) -> Player:
         responseList = responseText.split("\n")
-        print(responseList)
         for i in range(len(responseList)):
             if i == int(re.findall(r"(\d+):\s*-?\s*\d", responseList[i])[0]):
                 self.playerList[i].score += int(
@@ -133,18 +163,14 @@ def startGameSession(userList: List[str]) -> GameSession:
     return sesh
 
 
-def sendMessage(session: GameSession, msgList: List[str]) -> str:
-    message = ""
-    for i in range(len(msgList)):
-        message += f"{i}. {session.getListPlayers()[i]}: {msgList[i]} \n, "
-    response = session.scoringChat.send_message(
+def sendMessage(chat, message) -> str:
+    response = chat.send_message(
         message,
         safety_settings={
             HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
             HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
         },
     )
-    print("message: $", message, "$")
     return response.text
 
 
@@ -159,9 +185,9 @@ def giveUserOutput(message: str):
 
 def giveUserButtons(listData: list):
     toReturn = []
-    for i in listData:
+    for i in range(len(listData)):
         toReturn.append(
-            {"label": i[0], "id": i[1]},
+            {"label": listData[i][0], "action": i, "description": listData[i][2]},
         )
     update_buttons(toReturn)
 
@@ -180,16 +206,6 @@ def convertToList(inputDict: dict):
     return message
 
 
-def send_message_to_flask(message):
-    url = "http://127.0.0.1:5000/send_message"
-    response = requests.post(url, json={"message": message})
-    if response.status_code == 200:
-        return response.json().get("response")
-    else:
-        print("Failed to get a response from Flask server.")
-        return None
-
-
 def update_buttons(new_buttons):
     url = "http://127.0.0.1:5000/update_buttons"
     response = requests.post(url, json={"buttons": new_buttons})
@@ -199,16 +215,46 @@ def update_buttons(new_buttons):
         print("Failed to update buttons.")
 
 
+def handle_button_action(action):
+    if len(mainSesh.round.hand) > 0:
+        mainSesh.round.playCard(mainSesh.round.hand[action])
+        if useAI:
+            userText = sendMessage(mainSesh.userChat, mainSesh.round.hand[action].name)
+            responseText = sendMessage(mainSesh.scoringChat, userText)
+            send_message_to_flask(userText)
+            send_response_to_flask(responseText)
+    if mainSesh.round.endRound():
+        mainSesh.round.startRound()
+    else:
+        send_message_to_flask("Thank you for playing")
+
+
+def send_message_to_flask(message):
+    """Send game output to Flask for front-end display."""
+    url = "http://127.0.0.1:5000/send_game_update"  # Flask server URL
+    response = requests.post(url, json={"message": message})
+    return response.json()
+
+
+def send_response_to_flask(message):
+    """Send game output to Flask for front-end display."""
+    url = "http://127.0.0.1:5000/send_response_update"  # Flask server URL
+    response = requests.post(url, json={"message": message})
+    return response.json()
+
+
 gamesSet = set()
 with open("data.json", "r") as file:
     data = json.load(file)
 gameStartInformationPrompt = data["gameStartInformation"]
 charInfo = data["charInfo"]
+userInfo = data["userInfo"]
+useAI = False
 convertedCharInfo = []
 for i in charInfo:
     convertedCharInfo.append({"role": "user", "parts": i})
 cardInfo = data["cards"]
-cardsMap = {}
+cardsMap: Dict[int, Card] = {}
 for i in cardInfo:
     cardsMap[i["id"]] = card = Card(
         id=i["id"],
@@ -218,15 +264,13 @@ for i in cardInfo:
         type=i["type"],  # Blank for now
         effect=i["effect"],  # Blank for now
     )
+mainSesh = GameSession(10, "John")
+
 if __name__ == "__main__":
-    mainSesh = startGameSession(["John"])
     players = mainSesh.getListPlayers()
 
-    round = Round(players[0], 100)
-
-    round.startRound()
-    while round.endRound():
-        round.startRound()
+    mainSesh.round.startRound()
+    while True:
         time.sleep(1)
     # while True:
     #     print(

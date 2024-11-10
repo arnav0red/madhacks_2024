@@ -1,7 +1,10 @@
 {
-    "gameStartInformation": "You are in a dating show, and they are two contestants who are trying to woo you.\n Each line will start with the users name and number. Answer in the format, [Number]: [Score] [Newline]. Give a score between -1 to 2. Feel free to give a -1 if you don't like a comment",
+    "gameStartInformation": "You are on a date and a the guy is trying to woo you. Give a one line reply on their comment.",
     "charInfo": [
-        "You like forward aggressive people who take charge.."
+        "You like forward aggressive people who take charge."
+    ],
+    "userInfo": [
+        "You are on a date and are trying to woo the girl. Give one line based on the input."
     ],
     "cards": [
         {
@@ -24,9 +27,11 @@
             "id": 3,
             "name": "QUESTION",
             "flavor_text": "A card used to ask a question that can lead to different outcomes.",
-            "description": "",
+            "description": "Confidence + 5",
             "type": "",
-            "effect": ""
+            "effect": {
+                "confidence": 5
+            }
         },
         {
             "id": 4,
@@ -43,7 +48,7 @@
             "id": 5,
             "name": "COMPLIMENT",
             "flavor_text": "A card that allows you to give a compliment, which can improve relationships.",
-            "description": "Attract + 10, CardVal - 2",
+            "description": "Attract + 10, Lowers card value - 2",
             "type": "",
             "effect": {
                 "attract": 10,
@@ -62,17 +67,28 @@
             "id": 7,
             "name": "LISTEN",
             "flavor_text": "A card that focuses on listening, which can help understand others' needs.",
-            "description": "",
+            "description": "Confidence + 5",
             "type": "",
-            "effect": ""
+            "effect": {
+                "confidence": 5
+            }
         },
         {
             "id": 8,
             "name": "TEASE",
             "flavor_text": "A playful card that allows you to tease someone, often to provoke a reaction.",
-            "description": "",
+            "description": "20% Attraction + 60, 80% Morale -30",
             "type": "",
-            "effect": ""
+            "effect": {
+                "gamba": {
+                    "0.2": {
+                        "attract": 60
+                    },
+                    "0.8": {
+                        "moraleNeg": 30
+                    }
+                }
+            }
         },
         {
             "id": 10,
