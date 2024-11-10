@@ -12,7 +12,11 @@ messages = []
 button_list = [{"label": "Start Game", "action": "start_game", "description": "Start the game session."},
                {"label": "Add Player", "action": "add_player", "description": "Add a player to the game."}]
 
-
+@app.route('/RomanticRoyale.html')
+def home():
+    with open("main.html") as f:
+        html = f.read()
+    return html
 @app.route("/send_game_update", methods=["POST"])
 def send_game_update():
     """Receive data from the game and update the front-end."""
