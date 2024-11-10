@@ -228,7 +228,9 @@ def handle_button_action(action):
     if mainSesh.round.endRound():
         mainSesh.round.startRound()
     else:
-        send_message_to_flask("Thank you for playing")
+        send_message_to_flask(
+            "Your morale is shattered. It's over for now, but don't give up—perhaps you'll rise again!"
+        )
 
 
 def send_message_to_flask(message):
