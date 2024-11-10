@@ -1,0 +1,126 @@
+{
+    "gameStartInformation": "You are in a dating show, and they are two contestants who are trying to woo you.\n Each line will start with the users name and number. Answer in the format, [Number]: [Score] [Newline]. Give a score between -1 to 2. Feel free to give a -1 if you don't like a comment",
+    "charInfo": [
+        "You like forward aggressive people who take charge.."
+    ],
+    "cards": [
+        {
+            "id": 1,
+            "name": "ASK OUT",
+            "flavor_text": "A card that represents the act of asking someone out on a date.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        },
+        {
+            "id": 2,
+            "name": "TEMP",
+            "flavor_text": "A temporary card that could represent a short-term boost or effect.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        },
+        {
+            "id": 3,
+            "name": "QUESTION",
+            "flavor_text": "A card used to ask a question that can lead to different outcomes.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        },
+        {
+            "id": 4,
+            "name": "JOKE",
+            "flavor_text": "A card that triggers a joke, potentially influencing morale or mood.",
+            "description": "Attract + 10, FriendZone + 2",
+            "type": "",
+            "effect": {
+                "attract": 10,
+                "friendzone": 2
+            }
+        },
+        {
+            "id": 5,
+            "name": "COMPLIMENT",
+            "flavor_text": "A card that allows you to give a compliment, which can improve relationships.",
+            "description": "Attract + 10, CardVal - 2",
+            "type": "",
+            "effect": {
+                "attract": 10,
+                "decrAffect": 2
+            }
+        },
+        {
+            "id": 6,
+            "name": "GOSSIP",
+            "flavor_text": "A card used to spread rumors or share information with others.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        },
+        {
+            "id": 7,
+            "name": "LISTEN",
+            "flavor_text": "A card that focuses on listening, which can help understand others' needs.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        },
+        {
+            "id": 8,
+            "name": "TEASE",
+            "flavor_text": "A playful card that allows you to tease someone, often to provoke a reaction.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        },
+        {
+            "id": 10,
+            "name": "SHARE",
+            "flavor_text": "A card that allows you to share an item or resource with someone else.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        },
+        {
+            "id": 11,
+            "name": "TOILET BREAK",
+            "flavor_text": "A card that gives a character a brief break to regain energy or clarity.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        },
+        {
+            "id": 13,
+            "name": "SUGGEST",
+            "flavor_text": "A card used to offer suggestions to others, potentially guiding their actions.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        },
+        {
+            "id": 14,
+            "name": "RELATE",
+            "flavor_text": "A card that allows one to relate to someone else's experience or feelings.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        },
+        {
+            "id": 15,
+            "name": "CHALLENGE",
+            "flavor_text": "A card that presents a challenge, testing someone's abilities or resolve.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        },
+        {
+            "id": 16,
+            "name": "REFLECT",
+            "flavor_text": "A card that encourages introspection and reflection on past actions.",
+            "description": "",
+            "type": "",
+            "effect": ""
+        }
+    ]
+}
